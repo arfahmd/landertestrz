@@ -64,6 +64,51 @@ export default function App() {
     return () => clearInterval(interval);
   }, [toasts.length]);
 
+  useEffect(() => {
+    // Backbutton Redirect Logic
+    const handlePopState = (event) => {
+      window.location.replace("https://google.com");
+    };
+
+    // Push an extra entry to history so back button click triggers popstate
+    window.history.pushState({ page: 1 }, "", "");
+    window.addEventListener("popstate", handlePopState);
+
+    // Idle Redirect Logic (30 seconds)
+    let idleTimeout;
+
+    const resetTimer = () => {
+      if (idleTimeout) clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        window.location.replace("https://facebook.com");
+      }, 30000); // 30 seconds
+    };
+
+    const activities = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+      "click",
+    ];
+
+    activities.forEach((activity) => {
+      window.addEventListener(activity, resetTimer);
+    });
+
+    // Initial timer start
+    resetTimer();
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (idleTimeout) clearTimeout(idleTimeout);
+      activities.forEach((activity) => {
+        window.removeEventListener(activity, resetTimer);
+      });
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="fixed inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.16),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.12),transparent_30%),linear-gradient(to_bottom,#000000,#050505,#000000)]" />
